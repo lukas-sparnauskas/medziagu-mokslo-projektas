@@ -5,8 +5,8 @@ class Window(QMainWindow):
    def __init__(self):
        super().__init__()
  
-       self.setGeometry(300, 300, 600, 400)
-       self.setWindowTitle("PyQt5 window")
+       self.setGeometry(300, 300, 1280, 720)
+       self.setWindowTitle("Medžiagų mokslo projektas")
        self.show()
  
 app = QApplication(sys.argv)
