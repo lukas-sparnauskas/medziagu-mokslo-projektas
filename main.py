@@ -35,20 +35,20 @@ class Ui_Dialog(object):
 
     ####################################################
     ## Kintamųjų aprašymas
-    length1_initValue = 300
+    length1_initValue = 1000
     length1_minValue = 10
-    length1_maxValue = 1000
+    length1_maxValue = 2000
 
-    length2_initValue = 400
+    length2_initValue = 1100
     length2_minValue = 10
     length2_maxValue = 2000
 
     temp1_initValue = 30
-    temp1_minValue = 10
-    temp1_maxValue = 100
+    temp1_minValue = 0
+    temp1_maxValue = 300
 
     temp2_initValue = 70
-    temp2_minValue = 10
+    temp2_minValue = 0
     temp2_maxValue = 300
 
     process_start = 0
@@ -126,6 +126,14 @@ class Ui_Dialog(object):
         self.length2Slider.setValue(self.length2Value.value())
     def onTemp2ValueChange(self):
         self.temp2Slider.setValue(self.temp2Value.value())
+    def onRadioGroupChange(self):
+        if (self.selectAlpha.isChecked()):
+            self.materialGroup.setEnabled(False)
+            self.length2Group.setEnabled(True)
+        else:
+            self.materialGroup.setEnabled(True)
+            self.length2Group.setEnabled(False)
+
     ####################################################
 
     ####################################################
@@ -198,6 +206,7 @@ class Ui_Dialog(object):
         self.materialGroup.setGeometry(QtCore.QRect(920, 460, 181, 71))
         self.materialGroup.setTitle("")
         self.materialGroup.setObjectName("materialGroup")
+        self.materialGroup.setEnabled(False)
 
         self.materialComboBox = QtWidgets.QComboBox(self.materialGroup)
         self.materialComboBox.setGeometry(QtCore.QRect(10, 40, 161, 22))
@@ -304,6 +313,7 @@ class Ui_Dialog(object):
         self.selectAlpha = QtWidgets.QRadioButton(self.radioGroup)
         self.selectAlpha.setGeometry(QtCore.QRect(43, 25, 161, 21))
         self.selectAlpha.setChecked(True)
+        self.selectAlpha.clicked.connect(self.onRadioGroupChange)
 
         self.selectLengthLabel = QtWidgets.QLabel(self.radioGroup)
         self.selectLengthLabel.setGeometry(QtCore.QRect(117, 0, 161, 21))
@@ -312,6 +322,7 @@ class Ui_Dialog(object):
 
         self.selectLength = QtWidgets.QRadioButton(self.radioGroup)
         self.selectLength.setGeometry(QtCore.QRect(127, 25, 161, 21))
+        self.selectLength.clicked.connect(self.onRadioGroupChange)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
