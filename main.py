@@ -23,7 +23,8 @@ class Materials:
     items = [
         Material(0, "Varis", 0.0000167),
         Material(1, "Auksas", 0.0000142),
-        Material(2, "Geležis", 0.000012)
+        Material(2, "Geležis", 0.000012),
+        Material(3, "Aliuminis", 0.000023)
 
         # Jei norit įdėti medžiagą, į šitą listą įdėkit dar vieną Material() su id (+1) ir vardu
     ]
@@ -82,7 +83,7 @@ class Ui_Dialog(object):
         self.temp1Value.setEnabled(False)
         self.temp2Value.setEnabled(False)
         self.pushButton.setEnabled(False)
-        self.results.show()
+        self.radioGroup.setEnabled(False)
         #self.process_start = timer()
     ####################################################
 
@@ -107,6 +108,7 @@ class Ui_Dialog(object):
         self.temp1Value.setEnabled(True)
         self.temp2Value.setEnabled(True)
         self.pushButton.setEnabled(True)
+        self.radioGroup.setEnabled(True)
     ####################################################
 
     ####################################################
@@ -131,9 +133,11 @@ class Ui_Dialog(object):
         if (self.selectAlpha.isChecked()):
             self.materialGroup.setEnabled(False)
             self.length2Group.setEnabled(True)
+            self.resultsLabel2.setText("α, m/m°C")
         else:
             self.materialGroup.setEnabled(True)
             self.length2Group.setEnabled(False)
+            self.resultsLabel2.setText("L, mm")
 
     ####################################################
 
@@ -343,7 +347,7 @@ class Ui_Dialog(object):
         self.results = QtWidgets.QDoubleSpinBox(self.resultsGroup)
         self.results.setGeometry(QtCore.QRect(10, 70, 161, 31))
         self.results.setFont(self.valueFont)
-        self.results.hide()
+        self.results.setReadOnly(True)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -361,10 +365,10 @@ class Ui_Dialog(object):
         self.pushButton_2.setText(_translate("Dialog", "Reset"))
         self.temp2Label.setText(_translate("Dialog", "Galutinė temp., °C"))
         self.length2Label.setText(_translate("Dialog", "Galutinis ilgis, mm"))
-        self.alphaLabel.setText(_translate("Dialog", "Alfa"))
-        self.selectLengthLabel.setText(_translate("Dialog", "Ilgis"))
+        self.alphaLabel.setText(_translate("Dialog", "α, m/m°C"))
+        self.selectLengthLabel.setText(_translate("Dialog", "L, mm"))
         self.resultsLabel1.setText(_translate("Dialog", "Rezultatai"))
-        self.resultsLabel2.setText(_translate("Dialog", ""))
+        self.resultsLabel2.setText(_translate("Dialog", "α, m/m°C"))
 
         for material in Materials.items:
             self.materialComboBox.setItemText(material.id, _translate("Dialog", material.name))
