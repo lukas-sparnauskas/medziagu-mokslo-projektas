@@ -82,6 +82,7 @@ class Ui_Dialog(object):
         self.temp1Value.setEnabled(False)
         self.temp2Value.setEnabled(False)
         self.pushButton.setEnabled(False)
+        self.results.show()
         #self.process_start = timer()
     ####################################################
 
@@ -216,7 +217,7 @@ class Ui_Dialog(object):
         self.openGLWidget.setObjectName("openGLWidget")
 
         self.graphicsView = QtWidgets.QGraphicsView(Dialog)
-        self.graphicsView.setGeometry(QtCore.QRect(10, 650, 1101, 231))
+        self.graphicsView.setGeometry(QtCore.QRect(10, 650, 891, 231))
         self.graphicsView.setObjectName("graphicsView")
 
         self.pushButton = QtWidgets.QPushButton(Dialog)
@@ -313,6 +314,26 @@ class Ui_Dialog(object):
         self.selectLength = QtWidgets.QRadioButton(self.radioGroup)
         self.selectLength.setGeometry(QtCore.QRect(127, 25, 161, 21))
 
+        self.resultsGroup = QtWidgets.QGroupBox(Dialog)
+        self.resultsGroup.setGeometry(QtCore.QRect(920, 650, 181, 231))
+        self.resultsGroup.setTitle("")
+        self.resultsGroup.setObjectName("resultsGroup")
+
+        self.resultsLabel1 = QtWidgets.QLabel(self.resultsGroup)
+        self.resultsLabel1.setGeometry(QtCore.QRect(10, 10, 161, 21))
+        self.resultsLabel1.setFont(self.labelFont)
+        self.resultsLabel1.setObjectName("resultsLabel1")
+        
+        self.resultsLabel2 = QtWidgets.QLabel(self.resultsGroup)
+        self.resultsLabel2.setGeometry(QtCore.QRect(10, 45, 161, 21))
+        self.resultsLabel2.setFont(self.labelFont)
+        self.resultsLabel2.setObjectName("resultsLabel2")
+
+        self.results = QtWidgets.QDoubleSpinBox(self.resultsGroup)
+        self.results.setGeometry(QtCore.QRect(10, 70, 161, 31))
+        self.results.setFont(self.valueFont)
+        self.results.hide()
+
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
     ####################################################
@@ -331,6 +352,8 @@ class Ui_Dialog(object):
         self.length2Label.setText(_translate("Dialog", "Galutinis ilgis, mm"))
         self.alphaLabel.setText(_translate("Dialog", "Alfa"))
         self.selectLengthLabel.setText(_translate("Dialog", "Ilgis"))
+        self.resultsLabel1.setText(_translate("Dialog", "Rezultatai"))
+        self.resultsLabel2.setText(_translate("Dialog", ""))
 
         for material in Materials.items:
             self.materialComboBox.setItemText(material.id, _translate("Dialog", material.name))
