@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
+import matplotlib
 
 # -*- coding: utf-8 -*-
 
@@ -234,10 +235,27 @@ class Ui_Dialog(object):
         self.length2Value.valueChanged.connect(self.onLength2ValueChange)
         self.length2Value.setFont(self.valueFont)
 
-        self.groupBox = QtWidgets.QGroupBox(Dialog)
-        self.groupBox.setGeometry(QtCore.QRect(920, 530, 181, 51))
-        self.groupBox.setTitle("")
-        self.groupBox.setObjectName("groupBox")
+        self.radioGroup = QtWidgets.QGroupBox(Dialog)
+        self.radioGroup.setGeometry(QtCore.QRect(920, 530, 181, 51))
+        self.radioGroup.setTitle("")
+        self.radioGroup.setObjectName("radioGroup")
+
+        self.alphaLabel = QtWidgets.QLabel(self.radioGroup)
+        self.alphaLabel.setGeometry(QtCore.QRect(35, 0, 161, 21))
+        self.alphaLabel.setFont(self.labelFont)
+        self.alphaLabel.setObjectName("alphaLabel")
+
+        self.selectAlpha = QtWidgets.QRadioButton(self.radioGroup)
+        self.selectAlpha.setGeometry(QtCore.QRect(43, 25, 161, 21))
+        self.selectAlpha.setChecked(True)
+
+        self.selectLengthLabel = QtWidgets.QLabel(self.radioGroup)
+        self.selectLengthLabel.setGeometry(QtCore.QRect(117, 0, 161, 21))
+        self.selectLengthLabel.setFont(self.labelFont)
+        self.selectLengthLabel.setObjectName("selectLengthLabel")
+
+        self.selectLength = QtWidgets.QRadioButton(self.radioGroup)
+        self.selectLength.setGeometry(QtCore.QRect(127, 25, 161, 21))
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -258,6 +276,8 @@ class Ui_Dialog(object):
         self.pushButton_2.setText(_translate("Dialog", "Reset"))
         self.temp2Label.setText(_translate("Dialog", "Galutinė temp., °C"))
         self.length2Label.setText(_translate("Dialog", "Galutinis ilgis, mm"))
+        self.alphaLabel.setText(_translate("Dialog", "Alfa"))
+        self.selectLengthLabel.setText(_translate("Dialog", "Ilgis"))
     ####################################################
 ####################################################
 
