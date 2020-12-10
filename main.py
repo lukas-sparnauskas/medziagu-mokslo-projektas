@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from timeit import default_timer as timer
+import pyqtgraph as pg
+import numpy as np
 import sys
 
 # -*- coding: utf-8 -*-
@@ -26,8 +28,14 @@ class Materials:
         Material(2, "Geležis", 0.000012),
         Material(3, "Aliuminis", 0.000023)
 
-        # Jei norit įdėti medžiagą, į šitą listą įdėkit dar vieną Material() su id (+1) ir vardu
+        # Jei norit įdėti medžiagą, į šitą listą įdėkit dar vieną Material() su id (+1), vardu ir alfa koeficientu
     ]
+
+    def getCoef(self, id):
+        for item in self.items:
+            if (item.id == id):
+                return item.coef
+        return -1
 ####################################################
 
 ####################################################
@@ -67,12 +75,20 @@ class Ui_Dialog(object):
     ####################################################
     ##  'Go' mygtuko paspaudimo metodas
     def doGo(self):
+        ilgis_pr = self.length1Slider.value()
+        ilgis_ga = self.length2Slider.value()
+        temp_pr = self.temp1Slider.value()
+        temp_ga = self.temp2Slider.value()
+        coef = Materials.getCoef(Materials, self.materialComboBox.currentIndex())
+        result = None
+
         print("----------------------------------------")
         print("Medžiaga             : ", self.materialComboBox.currentText())
-        print("Pradinis ilgis  (mm) : ", self.length1Slider.value())
-        print("Galutinis ilgis (mm) : ", self.length2Slider.value())
-        print("Pradinė temp.   (°C) : ", self.temp1Slider.value())
-        print("Galutinė temp.  (°C) : ", self.temp2Slider.value())
+        print("Pradinis ilgis  (mm) : ", ilgis_pr)
+        if (self.selectAlpha.isChecked()):
+            print("Galutinis ilgis (mm) : ", ilgis_ga)
+        print("Pradinė temp.   (°C) : ", temp_pr)
+        print("Galutinė temp.  (°C) : ", temp_ga)
         self.materialComboBox.setEnabled(False)
         self.length1Slider.setEnabled(False)
         self.length2Slider.setEnabled(False)
@@ -85,6 +101,33 @@ class Ui_Dialog(object):
         self.pushButton.setEnabled(False)
         self.radioGroup.setEnabled(False)
         #self.process_start = timer()
+
+        self.plotView.clear()
+        if (self.selectAlpha.isChecked()):
+            #for i in range(3):
+            #    self.plotView.plot(x, y[i], pen=(i,3))
+            ilgis_pr = ilgis_pr / 1000
+            ilgis_ga = ilgis_ga / 1000
+            result = (ilgis_ga - ilgis_pr) / (ilgis_pr * (temp_ga - temp_pr))
+            self.results.setDecimals(6)
+            self.results.setValue(result)
+            ilgis_ga = ilgis_ga * 1000
+            print("           α (m/m°C) : ", result)
+        else:
+            ilgis_pr = ilgis_pr / 1000
+            ilgis_ga = ilgis_pr + (ilgis_pr * coef * (temp_ga - temp_pr))
+            ilgis_ga = ilgis_ga * 1000
+            self.results.setDecimals(3)
+            self.results.setValue(ilgis_ga)
+            print("              L (mm) : ", ilgis_ga)
+        
+        ilgis_pr = ilgis_pr * 1000
+        x = np.linspace(temp_pr, temp_ga, num=abs((temp_ga-temp_pr) * 10))
+        y = np.linspace(ilgis_pr, ilgis_ga, num=abs((temp_ga-temp_pr) * 10))
+        #print(abs(ilgis_ga-ilgis_pr))
+        self.plotView.plot(x, y, pen=1)
+        self.plotView.centralLayout
+
     ####################################################
 
     ####################################################
@@ -109,6 +152,7 @@ class Ui_Dialog(object):
         self.temp2Value.setEnabled(True)
         self.pushButton.setEnabled(True)
         self.radioGroup.setEnabled(True)
+        self.plotView.clear()
     ####################################################
 
     ####################################################
@@ -225,9 +269,12 @@ class Ui_Dialog(object):
         self.materialLabel.setFont(self.labelFont)
         self.materialLabel.setObjectName("materialLabel")
 
-        self.openGLWidget = QtWidgets.QOpenGLWidget(Dialog)
-        self.openGLWidget.setGeometry(QtCore.QRect(10, 20, 891, 621))
-        self.openGLWidget.setObjectName("openGLWidget")
+        self.plotView = pg.PlotWidget(Dialog)
+        self.plotView.setXRange(0, 100)
+        self.plotView.setYRange(0, 100)
+        self.plotView.setGeometry(QtCore.QRect(10, 20, 891, 621))
+        self.plotView.setObjectName("plotView")
+        self.plotView.showButtons()
 
         self.graphicsView = QtWidgets.QGraphicsView(Dialog)
         self.graphicsView.setGeometry(QtCore.QRect(10, 650, 891, 231))
@@ -346,6 +393,8 @@ class Ui_Dialog(object):
 
         self.results = QtWidgets.QDoubleSpinBox(self.resultsGroup)
         self.results.setGeometry(QtCore.QRect(10, 70, 161, 31))
+        self.results.setMinimum(sys.float_info.min)
+        self.results.setMaximum(sys.float_info.max)
         self.results.setFont(self.valueFont)
         self.results.setReadOnly(True)
 
