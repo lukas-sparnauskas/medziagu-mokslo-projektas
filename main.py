@@ -4,6 +4,7 @@ import pyqtgraph as pg
 import numpy as np
 import sys
 
+
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'untitled.ui'
@@ -21,6 +22,7 @@ class Material:
         self.name = name
         self.coef = coef
 
+
 class Materials:
     items = [
         Material(0, "Varis", 0.0000167),
@@ -36,12 +38,19 @@ class Materials:
             if (item.id == id):
                 return item.coef
         return -1
+
+    def getName(self, id):
+        for item in self.items:
+            if (item.id == id):
+                return item.name
+        return -1
+
+
 ####################################################
 
 ####################################################
 ##  Pagrindinė klasė
 class Ui_Dialog(object):
-
     ####################################################
     ## Kintamųjų aprašymas
     length1_initValue = 1000
@@ -62,7 +71,7 @@ class Ui_Dialog(object):
 
     process_start = 0
     ####################################################
-    
+
     ####################################################
     ##  Šriftų aprašymas
     labelFont = QtGui.QFont()
@@ -70,16 +79,19 @@ class Ui_Dialog(object):
 
     valueFont = QtGui.QFont()
     valueFont.setPointSize(16)
+
     ####################################################
 
     ####################################################
     ##  'Go' mygtuko paspaudimo metodas
     def doGo(self):
         ilgis_pr = self.length1Slider.value()
+        ilgis_prr = self.length1Slider.value()
         ilgis_ga = self.length2Slider.value()
         temp_pr = self.temp1Slider.value()
         temp_ga = self.temp2Slider.value()
         coef = Materials.getCoef(Materials, self.materialComboBox.currentIndex())
+        name = Materials.getName(Materials, self.materialComboBox.currentIndex())
         result = None
 
         print("----------------------------------------")
@@ -100,11 +112,12 @@ class Ui_Dialog(object):
         self.temp2Value.setEnabled(False)
         self.pushButton.setEnabled(False)
         self.radioGroup.setEnabled(False)
-        #self.process_start = timer()
+        # self.process_start = timer()
 
         self.plotView.clear()
+        ilgis_gaa = self.length2Slider.value()
         if (self.selectAlpha.isChecked()):
-            #for i in range(3):
+            # for i in range(3):
             #    self.plotView.plot(x, y[i], pen=(i,3))
             ilgis_pr = ilgis_pr / 1000
             ilgis_ga = ilgis_ga / 1000
@@ -113,6 +126,23 @@ class Ui_Dialog(object):
             self.results.setValue(result)
             ilgis_ga = ilgis_ga * 1000
             print("           α (m/m°C) : ", result)
+            x = np.linspace(temp_pr, temp_ga, num=abs((temp_ga - temp_pr) * 10))
+            # y = np.linspace(ilgis_pr, ilgis_gaa, num=10)
+            y = np.linspace(ilgis_prr, ilgis_ga, num=abs((temp_ga - temp_pr) * 10))
+            # print(abs(ilgis_ga-ilgis_pr))
+            self.plotView.setTitle("Kietojo kūno pailgėjimo priklausomybė nuo temperatūros pokyčio grafikas", color="b",
+                                   size="15pt")
+            self.plotView.setLabel('left', "<span style=\"color:red;font-size:20px\">L (mm)</span>")
+            self.plotView.setLabel('bottom', "<span style=\"color:red;font-size:20px\">Temperatūra, °C</span>")
+            self.plotView.showGrid(x=True, y=True)
+
+            self.plotView.setXRange(0, temp_ga)
+            # self.plotView.setYRange(ilgis_pr, ilgis_gaa)
+            self.plotView.setYRange(ilgis_prr, ilgis_ga)
+
+            self.plotView.plot(x, y, pen=1)
+            self.plotView.centralLayout
+
         else:
             ilgis_pr = ilgis_pr / 1000
             ilgis_ga = ilgis_pr + (ilgis_pr * coef * (temp_ga - temp_pr))
@@ -120,13 +150,25 @@ class Ui_Dialog(object):
             self.results.setDecimals(3)
             self.results.setValue(ilgis_ga)
             print("              L (mm) : ", ilgis_ga)
-        
-        ilgis_pr = ilgis_pr * 1000
-        x = np.linspace(temp_pr, temp_ga, num=abs((temp_ga-temp_pr) * 10))
-        y = np.linspace(ilgis_pr, ilgis_ga, num=abs((temp_ga-temp_pr) * 10))
-        #print(abs(ilgis_ga-ilgis_pr))
-        self.plotView.plot(x, y, pen=1)
-        self.plotView.centralLayout
+
+            ilgis_ga = ilgis_ga - ilgis_prr
+
+            x = np.linspace(temp_pr, temp_ga, num=abs((temp_ga - temp_pr) * 10))
+            # y = np.linspace(ilgis_pr, ilgis_gaa, num=10)
+            y = np.linspace(0, ilgis_ga, num=abs((temp_ga - temp_pr) * 10))
+            # print(abs(ilgis_ga-ilgis_pr))
+            self.plotView.setTitle("Kietojo kūno pailgėjimo priklausomybė nuo temperatūros pokyčio grafikas", color="b",
+                                   size="15pt")
+            self.plotView.setLabel('left', "<span style=\"color:red;font-size:20px\">L (mm)</span>")
+            self.plotView.setLabel('bottom', "<span style=\"color:red;font-size:20px\">Temperatūra, °C</span>")
+            self.plotView.showGrid(x=True, y=True)
+            self.plotView.addLegend()
+            self.plotView.setXRange(0, temp_ga)
+            # self.plotView.setYRange(ilgis_pr, ilgis_gaa)
+            self.plotView.setYRange(0, ilgis_ga)
+
+            self.plotView.plot(x, y, name=name, pen=1)
+            self.plotView.centralLayout
 
     ####################################################
 
@@ -153,26 +195,35 @@ class Ui_Dialog(object):
         self.pushButton.setEnabled(True)
         self.radioGroup.setEnabled(True)
         self.plotView.clear()
+
     ####################################################
 
     ####################################################
     ##  Įvedamų reikšmių pasikeitimo valdymo metodai
     def onLength1SliderChange(self):
         self.length1Value.setValue(self.length1Slider.value())
+
     def onTemp1SliderChange(self):
         self.temp1Value.setValue(self.temp1Slider.value())
+
     def onLength2SliderChange(self):
         self.length2Value.setValue(self.length2Slider.value())
+
     def onTemp2SliderChange(self):
         self.temp2Value.setValue(self.temp2Slider.value())
+
     def onLength1ValueChange(self):
         self.length1Slider.setValue(self.length1Value.value())
+
     def onTemp1ValueChange(self):
         self.temp1Slider.setValue(self.temp1Value.value())
+
     def onLength2ValueChange(self):
         self.length2Slider.setValue(self.length2Value.value())
+
     def onTemp2ValueChange(self):
         self.temp2Slider.setValue(self.temp2Value.value())
+
     def onRadioGroupChange(self):
         if (self.selectAlpha.isChecked()):
             self.materialGroup.setEnabled(False)
@@ -189,7 +240,7 @@ class Ui_Dialog(object):
     ##  Grafinės sąsajos aprašymas ir inicializavimas
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1118, 889)
+        Dialog.resize(1118, 680)
 
         self.lengthGroup1 = QtWidgets.QGroupBox(Dialog)
         self.lengthGroup1.setGeometry(QtCore.QRect(920, 20, 181, 111))
@@ -250,7 +301,7 @@ class Ui_Dialog(object):
         self.temp1Value.setValue(self.temp1_initValue)
         self.temp1Value.valueChanged.connect(self.onTemp1ValueChange)
         self.temp1Value.setFont(self.valueFont)
-        
+
         self.materialGroup = QtWidgets.QGroupBox(Dialog)
         self.materialGroup.setGeometry(QtCore.QRect(920, 460, 181, 71))
         self.materialGroup.setTitle("")
@@ -270,15 +321,15 @@ class Ui_Dialog(object):
         self.materialLabel.setObjectName("materialLabel")
 
         self.plotView = pg.PlotWidget(Dialog)
-        self.plotView.setXRange(0, 100)
-        self.plotView.setYRange(0, 100)
-        self.plotView.setGeometry(QtCore.QRect(10, 20, 891, 621))
+        self.plotView.setXRange(0, 300)
+        self.plotView.setYRange(1000, 2000)
+        self.plotView.setGeometry(QtCore.QRect(10, 20, 891, 500))
         self.plotView.setObjectName("plotView")
         self.plotView.showButtons()
-
-        self.graphicsView = QtWidgets.QGraphicsView(Dialog)
-        self.graphicsView.setGeometry(QtCore.QRect(10, 650, 891, 231))
-        self.graphicsView.setObjectName("graphicsView")
+        self.plotView.setBackground('w')
+        # self.graphicsView = QtWidgets.QGraphicsView(Dialog)
+        # self.graphicsView.setGeometry(QtCore.QRect(10, 650, 891, 231))
+        # self.graphicsView.setObjectName("graphicsView")
 
         self.pushButton = QtWidgets.QPushButton(Dialog)
         self.pushButton.setGeometry(QtCore.QRect(920, 590, 81, 41))
@@ -307,7 +358,7 @@ class Ui_Dialog(object):
         self.temp2Slider.valueChanged.connect(self.onTemp2SliderChange)
         self.temp2Slider.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.temp2Slider.setTickInterval(10)
-        
+
         self.temp2Label = QtWidgets.QLabel(self.temp2Group)
         self.temp2Label.setGeometry(QtCore.QRect(10, 10, 161, 21))
         self.temp2Label.setFont(self.labelFont)
@@ -377,7 +428,7 @@ class Ui_Dialog(object):
         self.selectLength.clicked.connect(self.onRadioGroupChange)
 
         self.resultsGroup = QtWidgets.QGroupBox(Dialog)
-        self.resultsGroup.setGeometry(QtCore.QRect(920, 650, 181, 231))
+        self.resultsGroup.setGeometry(QtCore.QRect(30, 550, 181, 231))
         self.resultsGroup.setTitle("")
         self.resultsGroup.setObjectName("resultsGroup")
 
@@ -385,7 +436,7 @@ class Ui_Dialog(object):
         self.resultsLabel1.setGeometry(QtCore.QRect(10, 10, 161, 21))
         self.resultsLabel1.setFont(self.labelFont)
         self.resultsLabel1.setObjectName("resultsLabel1")
-        
+
         self.resultsLabel2 = QtWidgets.QLabel(self.resultsGroup)
         self.resultsLabel2.setGeometry(QtCore.QRect(10, 45, 161, 21))
         self.resultsLabel2.setFont(self.labelFont)
@@ -400,6 +451,7 @@ class Ui_Dialog(object):
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+
     ####################################################
 
     ####################################################
@@ -422,12 +474,14 @@ class Ui_Dialog(object):
         for material in Materials.items:
             self.materialComboBox.setItemText(material.id, _translate("Dialog", material.name))
     ####################################################
+
+
 ####################################################
 
 
 ####################################################
 ##  Programos paleidimas
-def main():    
+def main():
     app = QtWidgets.QApplication(sys.argv)
     window = QtWidgets.QDialog()
     ui = Ui_Dialog()
@@ -435,6 +489,7 @@ def main():
 
     window.show()
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()
