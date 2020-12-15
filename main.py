@@ -1,5 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from timeit import default_timer as timer
 import pyqtgraph as pg
 import numpy as np
 import sys
@@ -60,7 +59,7 @@ class Ui_Dialog(object):
     temp2_minValue = 0
     temp2_maxValue = 300
 
-    process_start = 0
+    timerInterval = 100
     ####################################################
     
     ####################################################
@@ -80,6 +79,7 @@ class Ui_Dialog(object):
         temp_pr = self.temp1Slider.value()
         temp_ga = self.temp2Slider.value()
         coef = Materials.getCoef(Materials, self.materialComboBox.currentIndex())
+        self.results.setValue(0)
         result = None
 
         print("----------------------------------------")
@@ -100,34 +100,73 @@ class Ui_Dialog(object):
         self.temp2Value.setEnabled(False)
         self.pushButton.setEnabled(False)
         self.radioGroup.setEnabled(False)
-        #self.process_start = timer()
 
         self.plotView.clear()
+
+        ####################################################
+        ## Rezultato apskaičiavimas
         if (self.selectAlpha.isChecked()):
-            #for i in range(3):
-            #    self.plotView.plot(x, y[i], pen=(i,3))
             ilgis_pr = ilgis_pr / 1000
             ilgis_ga = ilgis_ga / 1000
             result = (ilgis_ga - ilgis_pr) / (ilgis_pr * (temp_ga - temp_pr))
-            self.results.setDecimals(6)
-            self.results.setValue(result)
-            ilgis_ga = ilgis_ga * 1000
-            print("           α (m/m°C) : ", result)
         else:
             ilgis_pr = ilgis_pr / 1000
             ilgis_ga = ilgis_pr + (ilgis_pr * coef * (temp_ga - temp_pr))
-            ilgis_ga = ilgis_ga * 1000
-            self.results.setDecimals(3)
-            self.results.setValue(ilgis_ga)
-            print("              L (mm) : ", ilgis_ga)
-        
-        ilgis_pr = ilgis_pr * 1000
-        x = np.linspace(temp_pr, temp_ga, num=abs((temp_ga-temp_pr) * 10))
-        y = np.linspace(ilgis_pr, ilgis_ga, num=abs((temp_ga-temp_pr) * 10))
-        #print(abs(ilgis_ga-ilgis_pr))
-        self.plotView.plot(x, y, pen=1)
-        self.plotView.centralLayout
 
+        ####################################################
+        ## Funkcijos apskaičiavimas
+        ilgis_pr = ilgis_pr * 1000
+        ilgis_ga = ilgis_ga * 1000
+
+        self.ilgioFunkcija = [[], []]
+        k = (ilgis_ga - ilgis_pr) / (temp_ga - temp_pr)
+        if (temp_pr > temp_ga):
+            rangex = range(temp_ga, temp_pr)
+            self.i = temp_ga
+        else:
+            rangex = range(temp_pr, temp_ga)
+            self.i = temp_pr
+        self.ilgioFunkcija[0] = list(rangex)
+
+        for x in rangex:
+            self.ilgioFunkcija[1].append(k * (x - temp_pr) + ilgis_pr)
+            
+        ####################################################
+        ## Funkcijos braižymas
+        plt = self.plotView
+        self.data = [[], []]
+        self.curve = plt.plot()
+        self.curve.setData()
+        self.line = plt.addLine(x=self.i)
+        self.iteration = 0
+
+        def update():
+            self.data[0].append(self.ilgioFunkcija[0][self.iteration])
+            self.data[1].append(self.ilgioFunkcija[1][self.iteration])
+            self.curve.setData(x=self.data[0], y=self.data[1], pen=1)
+
+            self.i = (self.i+1)
+            self.line.setValue(self.i)
+            self.iteration += 1
+
+            if (self.iteration == abs(temp_ga - temp_pr)):
+                self.timer.stop()
+                self.enableControls()
+                plt.removeItem(self.line)
+                if (self.selectAlpha.isChecked()):
+                    self.results.setDecimals(6)
+                    self.results.setValue(result)
+                    print("           α (m/m°C) : ", result)
+                else:
+                    self.results.setDecimals(3)
+                    self.results.setValue(ilgis_ga)
+                    print("              L (mm) : ", ilgis_ga)
+
+        self.update = update
+        self.timer = pg.QtCore.QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(self.timerInterval)
+        ####################################################
     ####################################################
 
     ####################################################
@@ -141,6 +180,12 @@ class Ui_Dialog(object):
         self.temp2Slider.setValue(self.temp2_initValue)
         self.temp1Value.setValue(self.temp1_initValue)
         self.temp2Value.setValue(self.temp2_initValue)
+        self.results.setValue(0)
+        self.enableControls()
+        self.plotView.clear()
+    ####################################################
+
+    def enableControls(self):
         self.materialComboBox.setEnabled(True)
         self.length1Slider.setEnabled(True)
         self.length2Slider.setEnabled(True)
@@ -152,8 +197,6 @@ class Ui_Dialog(object):
         self.temp2Value.setEnabled(True)
         self.pushButton.setEnabled(True)
         self.radioGroup.setEnabled(True)
-        self.plotView.clear()
-    ####################################################
 
     ####################################################
     ##  Įvedamų reikšmių pasikeitimo valdymo metodai
@@ -174,6 +217,7 @@ class Ui_Dialog(object):
     def onTemp2ValueChange(self):
         self.temp2Slider.setValue(self.temp2Value.value())
     def onRadioGroupChange(self):
+        self.results.setValue(0)
         if (self.selectAlpha.isChecked()):
             self.materialGroup.setEnabled(False)
             self.length2Group.setEnabled(True)
