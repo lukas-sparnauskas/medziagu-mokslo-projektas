@@ -35,6 +35,12 @@ class Materials:
             if (item.id == id):
                 return item.coef
         return -1
+
+    def getName(self, id):
+        for item in self.items:
+            if (item.id == id):
+                return item.name
+        return -1
 ####################################################
 
 ####################################################
@@ -100,7 +106,6 @@ class Ui_Dialog(object):
         self.temp2Value.setEnabled(False)
         self.pushButton.setEnabled(False)
         self.radioGroup.setEnabled(False)
-
         self.plotView.clear()
 
         ####################################################
@@ -121,10 +126,10 @@ class Ui_Dialog(object):
         self.ilgioFunkcija = [[], []]
         k = (ilgis_ga - ilgis_pr) / (temp_ga - temp_pr)
         if (temp_pr > temp_ga):
-            rangex = range(temp_ga, temp_pr)
+            rangex = range(temp_ga, temp_pr + 1)
             self.i = temp_ga
         else:
-            rangex = range(temp_pr, temp_ga)
+            rangex = range(temp_pr, temp_ga + 1)
             self.i = temp_pr
         self.ilgioFunkcija[0] = list(rangex)
 
@@ -134,22 +139,25 @@ class Ui_Dialog(object):
         ####################################################
         ## Funkcijos braižymas
         plt = self.plotView
+        self.plotView.setXRange(temp_pr, temp_ga)
+        self.plotView.setYRange(ilgis_pr, ilgis_ga)
+        self.plotView.centralLayout
         self.data = [[], []]
         self.curve = plt.plot()
         self.curve.setData()
-        self.line = plt.addLine(x=self.i)
+        self.line = plt.addLine(x=self.i, pen=pg.mkPen('b', width=1))
         self.iteration = 0
 
         def update():
             self.data[0].append(self.ilgioFunkcija[0][self.iteration])
             self.data[1].append(self.ilgioFunkcija[1][self.iteration])
-            self.curve.setData(x=self.data[0], y=self.data[1], pen=1)
+            self.curve.setData(x=self.data[0], y=self.data[1], pen=pg.mkPen('r', width=3))
 
-            self.i = (self.i+1)
             self.line.setValue(self.i)
+            self.i = (self.i+1)
             self.iteration += 1
 
-            if (self.iteration == abs(temp_ga - temp_pr)):
+            if (self.iteration == abs(temp_ga - temp_pr) + 1):
                 self.timer.stop()
                 self.enableControls()
                 plt.removeItem(self.line)
@@ -233,7 +241,7 @@ class Ui_Dialog(object):
     ##  Grafinės sąsajos aprašymas ir inicializavimas
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1118, 889)
+        Dialog.resize(1118, 680)
 
         self.lengthGroup1 = QtWidgets.QGroupBox(Dialog)
         self.lengthGroup1.setGeometry(QtCore.QRect(920, 20, 181, 111))
@@ -314,15 +322,22 @@ class Ui_Dialog(object):
         self.materialLabel.setObjectName("materialLabel")
 
         self.plotView = pg.PlotWidget(Dialog)
-        self.plotView.setXRange(0, 100)
-        self.plotView.setYRange(0, 100)
-        self.plotView.setGeometry(QtCore.QRect(10, 20, 891, 621))
+        self.plotView.setXRange(0, 300)
+        self.plotView.setYRange(1000, 2000)
+        self.plotView.setGeometry(QtCore.QRect(10, 20, 891, 500))
         self.plotView.setObjectName("plotView")
         self.plotView.showButtons()
+        self.plotView.setBackground('w')
+        self.plotView.setTitle("Kietojo kūno pailgėjimo priklausomybė nuo temperatūros pokyčio grafikas", color='#000000',
+                                size="15pt")
+        self.plotView.setLabel('left', "<span style=\"color:black;font-size:20px\">L, mm</span>")
+        self.plotView.setLabel('bottom', "<span style=\"color:black;font-size:20px\">Temperatūra, °C</span>")
+        self.plotView.addLegend()
+        self.plotView.showGrid(x=True, y=True)
 
-        self.graphicsView = QtWidgets.QGraphicsView(Dialog)
-        self.graphicsView.setGeometry(QtCore.QRect(10, 650, 891, 231))
-        self.graphicsView.setObjectName("graphicsView")
+        # self.graphicsView = QtWidgets.QGraphicsView(Dialog)
+        # self.graphicsView.setGeometry(QtCore.QRect(10, 650, 891, 231))
+        # self.graphicsView.setObjectName("graphicsView")
 
         self.pushButton = QtWidgets.QPushButton(Dialog)
         self.pushButton.setGeometry(QtCore.QRect(920, 590, 81, 41))
@@ -421,7 +436,7 @@ class Ui_Dialog(object):
         self.selectLength.clicked.connect(self.onRadioGroupChange)
 
         self.resultsGroup = QtWidgets.QGroupBox(Dialog)
-        self.resultsGroup.setGeometry(QtCore.QRect(920, 650, 181, 231))
+        self.resultsGroup.setGeometry(QtCore.QRect(30, 550, 181, 231))
         self.resultsGroup.setTitle("")
         self.resultsGroup.setObjectName("resultsGroup")
 
@@ -476,8 +491,8 @@ def main():
     window = QtWidgets.QDialog()
     ui = Ui_Dialog()
     ui.setupUi(window)
-
     window.show()
+    window.raise_()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
