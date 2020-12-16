@@ -41,10 +41,46 @@ class Materials:
             if (item.id == id):
                 return item.name
         return -1
-####################################################
 
 ####################################################
-##  Pagrindinė klasė
+##  Klaidos lango klasė
+class Error_Dialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("errorDialog")
+        Dialog.setWindowTitle("Klaida!")
+
+        labelFont = QtGui.QFont()
+        labelFont.setPointSize(12)
+
+        self.errorMsg = QtWidgets.QLabel(Dialog)
+        self.errorMsg.setGeometry(QtCore.QRect(20, 10, 470, 50))
+        self.errorMsg.wordWrap = True
+        self.errorMsg.setFont(labelFont)
+        self.errorMsg.setObjectName("errorMsg")
+
+        self.okButton = QtWidgets.QPushButton(Dialog)
+        self.okButton.setGeometry(QtCore.QRect(400, 70, 80, 30))
+        self.okButton.setFont(labelFont)
+        self.okButton.setObjectName("okButton")
+        self.okButton.setText("OK")
+        self.okButton.clicked.connect(self.closeDialog)
+        
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def showErrorMsg(self, errorMsgText):
+        self.errorMsg.setText(errorMsgText)
+        errorDialog.show()
+        errorDialog.raise_()
+        window.setEnabled(False)
+
+    def closeDialog(self):
+        errorDialog.close()
+
+    def onExit(self):
+        window.setEnabled(True)
+
+####################################################
+##  Pagrindinio lango klasė
 class Ui_Dialog(object):
 
     ####################################################
@@ -66,7 +102,6 @@ class Ui_Dialog(object):
     temp2_maxValue = 300
 
     timerInterval = 100
-    ####################################################
     
     ####################################################
     ##  Šriftų aprašymas
@@ -75,7 +110,6 @@ class Ui_Dialog(object):
 
     valueFont = QtGui.QFont()
     valueFont.setPointSize(16)
-    ####################################################
 
     ####################################################
     ##  'Go' mygtuko paspaudimo metodas
@@ -84,6 +118,14 @@ class Ui_Dialog(object):
         ilgis_ga = self.length2Slider.value()
         temp_pr = self.temp1Slider.value()
         temp_ga = self.temp2Slider.value()
+
+        if (ilgis_pr > ilgis_ga and self.selectAlpha.isChecked()):
+            errorUI.showErrorMsg("Galutinis ilgis negali būti didesnis už pradinį ilgį!")
+            return
+        if (temp_pr >= temp_ga):
+            errorUI.showErrorMsg("Galutinė temperatūra negali būti didesnė\narba lygi pradinei temperatūrai!")
+            return
+
         coef = Materials.getCoef(Materials, self.materialComboBox.currentIndex())
         self.results.setValue(0)
         result = None
@@ -174,8 +216,6 @@ class Ui_Dialog(object):
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update)
         self.timer.start(self.timerInterval)
-        ####################################################
-    ####################################################
 
     ####################################################
     ##  'Reset' mygtuko paspaudimo metodas
@@ -236,12 +276,9 @@ class Ui_Dialog(object):
             self.resultsLabel2.setText("L, mm")
 
     ####################################################
-
-    ####################################################
     ##  Grafinės sąsajos aprašymas ir inicializavimas
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1118, 680)
 
         self.lengthGroup1 = QtWidgets.QGroupBox(Dialog)
         self.lengthGroup1.setGeometry(QtCore.QRect(920, 20, 181, 111))
@@ -459,7 +496,6 @@ class Ui_Dialog(object):
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
-    ####################################################
 
     ####################################################
     ##  Grafinės sąsajos elementų antraščių ir reikšmių aprašymai
@@ -480,21 +516,30 @@ class Ui_Dialog(object):
 
         for material in Materials.items:
             self.materialComboBox.setItemText(material.id, _translate("Dialog", material.name))
-    ####################################################
-####################################################
-
 
 ####################################################
 ##  Programos paleidimas
 def main():    
+    global app
+    global window
+    global errorDialog
+    global errorUI
+
     app = QtWidgets.QApplication(sys.argv)
     window = QtWidgets.QDialog()
+    window.setFixedSize(1118, 680)
     ui = Ui_Dialog()
     ui.setupUi(window)
     window.show()
     window.raise_()
+
+    errorDialog = QtWidgets.QDialog()
+    errorDialog.setFixedSize(500, 120)
+    errorUI = Error_Dialog()
+    errorUI.setupUi(errorDialog)
+    errorDialog.closeEvent = Error_Dialog.onExit
+
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
     main()
-####################################################
