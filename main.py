@@ -64,12 +64,22 @@ class Ui_Dialog(object):
         temp_pr = self.temp1Slider.value()
         temp_ga = self.temp2Slider.value()
 
-        if (ilgis_pr > ilgis_ga and self.selectAlpha.isChecked()):
-            errorUI.showErrorMsg("Galutinis ilgis negali būti didesnis už pradinį ilgį!")
+        if (temp_pr == temp_ga):
+            errorUI.showErrorMsg("Galutinė temperatūra turi skirtis nuo pradinės!")
             return
-        if (temp_pr >= temp_ga):
-            errorUI.showErrorMsg("Galutinė temperatūra negali būti didesnė\narba lygi pradinei temperatūrai!")
+        if (ilgis_pr > ilgis_ga and temp_pr < temp_ga and self.selectAlpha.isChecked()):
+            errorUI.showErrorMsg("Sąlyga `Pradinis ilgis` > `Galutinis ilgis` kai\n`Pradinė temperatūra` < `Galutinė temperatūra` neįmanoma!")
             return
+        if (ilgis_pr < ilgis_ga and temp_pr > temp_ga and self.selectAlpha.isChecked()):
+            errorUI.showErrorMsg("Sąlyga `Pradinis ilgis` < `Galutinis ilgis` kai\n`Pradinė temperatūra` > `Galutinė temperatūra` neįmanoma!")
+            return
+        if (ilgis_pr == ilgis_ga and temp_pr != temp_ga and self.selectAlpha.isChecked()):
+            errorUI.showErrorMsg("Sąlyga `Pradinis ilgis` = `Galutinis ilgis` kai\n`Pradinė temperatūra` =/= `Galutinė temperatūra` neįmanoma!")
+            return
+
+        self.calcDirection = True
+        if (temp_pr > temp_ga):
+            self.calcDirection = False
 
         coef = Materials.getCoef(Materials, self.materialComboBox.currentIndex())
         self.results.setValue(0)
@@ -109,17 +119,14 @@ class Ui_Dialog(object):
         ## Funkcijos apskaičiavimas
         ilgis_pr = ilgis_pr * 1000
         ilgis_ga = ilgis_ga * 1000
-
         self.ilgioFunkcija = [[], []]
         k = (ilgis_ga - ilgis_pr) / (temp_ga - temp_pr)
         if (temp_pr > temp_ga):
-            rangex = range(temp_ga, temp_pr + 1)
-            self.i = temp_ga
+            rangex = range(temp_pr, temp_ga - 1, -1)
         else:
             rangex = range(temp_pr, temp_ga + 1)
-            self.i = temp_pr
-        self.ilgioFunkcija[0] = list(rangex)
 
+        self.ilgioFunkcija[0] = list(rangex)
         for x in rangex:
             self.ilgioFunkcija[1].append(k * (x - temp_pr) + ilgis_pr)
             
@@ -132,6 +139,7 @@ class Ui_Dialog(object):
         self.data = [[], []]
         self.curve = plt.plot()
         self.curve.setData()
+        self.i = temp_pr
         self.line = plt.addLine(x=self.i, pen=pg.mkPen('b', width=1))
         self.iteration = 0
 
@@ -139,9 +147,11 @@ class Ui_Dialog(object):
             self.data[0].append(self.ilgioFunkcija[0][self.iteration])
             self.data[1].append(self.ilgioFunkcija[1][self.iteration])
             self.curve.setData(x=self.data[0], y=self.data[1], pen=pg.mkPen('r', width=3))
-
             self.line.setValue(self.i)
-            self.i = (self.i+1)
+            if (self.calcDirection):
+                self.i = (self.i+1)
+            else:
+                self.i = (self.i-1)
             self.iteration += 1
 
             if (self.iteration == abs(temp_ga - temp_pr) + 1):
@@ -320,10 +330,6 @@ class Ui_Dialog(object):
         self.plotView.setLabel('bottom', "<span style=\"color:black;font-size:20px\">Temperatūra, °C</span>")
         self.plotView.addLegend()
         self.plotView.showGrid(x=True, y=True)
-
-        # self.graphicsView = QtWidgets.QGraphicsView(Dialog)
-        # self.graphicsView.setGeometry(QtCore.QRect(10, 650, 891, 231))
-        # self.graphicsView.setObjectName("graphicsView")
 
         self.pushButton = QtWidgets.QPushButton(Dialog)
         self.pushButton.setGeometry(QtCore.QRect(920, mainWindowY - 51, 81, 41))
