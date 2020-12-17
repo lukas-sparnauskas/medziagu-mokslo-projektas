@@ -582,7 +582,7 @@ class About_Dialog(object):
         self.aboutText.wordWrap = True
         self.aboutText.setFont(labelFont)
         self.aboutText.setObjectName("aboutText")
-        self.aboutText.setText("Programą sukūrė:\nLukas Sparnauskas IFC-7\nJuozas Venckus IFB-7\nMarius Pupelis IFB-7\nRaminta Šniaukštaitė IFB-7\nAugustinas Juškevičius IFB-7\nTautvydas Banelis")
+        self.aboutText.setText("Programą sukūrė:\nLukas Sparnauskas IFC-7\nJuozas Venckus IFB-7\nMarius Pupelis IFB-7\nRaminta Šniaukštaitė IFB-7\nAugustinas Juškevičius IFB-7\nTautvydas Banelis IFS-8")
 
         self.okButton = QtWidgets.QPushButton(Dialog)
         self.okButton.setGeometry(QtCore.QRect(aboutWindowX - 100, aboutWindowY - 50, 80, 30))
